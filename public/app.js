@@ -2,6 +2,7 @@ const fileInput = document.querySelector("#fileInput");
 const downloadLink = document.querySelector("#downloadLink");
 const imagePreview = document.querySelector("#imagePreview");
 const loginBtn = document.querySelector("#loginBtn");
+const uploadBtn = document.querySelector("#uploadBtn");
 
 function createFetchOptions(method) {
   return {
@@ -15,20 +16,22 @@ function createFetchOptions(method) {
   };
 }
 
-function onFileLoaded(e) {
-  const imageBase64String = e.target.result;
-  imagePreview.src = imageBase64String;
+function onFileUpload(e) {
+  const options = createFetchOptions("POST");
 
-  fetchOptions.body = JSON.stringify({ image: imageBase64String });
+  options.body = JSON.stringify({ image: imagePreview.src });
 
-  fetch("/image", createFetchOptions("POST"));
+  fetch("/image", options);
 }
 
 function onFileChange(e) {
   const file = e.target.files[0];
   const fileReader = new FileReader();
 
-  fileReader.onloadend = onFileLoaded;
+  fileReader.onloadend = (e) => {
+    const imageBase64String = e.target.result;
+    imagePreview.src = imageBase64String;
+  };
 
   fileReader.readAsDataURL(file);
 }
@@ -38,5 +41,7 @@ loginBtn.addEventListener("click", () => {
     .then((response) => response.text())
     .then((text) => (document.cookie = `token=${text}`));
 });
+
+uploadBtn.addEventListener("click", onFileUpload);
 
 fileInput.addEventListener("change", onFileChange);
